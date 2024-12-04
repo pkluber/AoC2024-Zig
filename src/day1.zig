@@ -69,4 +69,25 @@ pub fn main() !void {
     }
 
     std.debug.print("Part 1 final answer: {}\n", .{total});
+
+    // Onto part 2
+    var map = std.AutoHashMap(i32, i32).init(allocator);
+    defer map.deinit();
+
+    for (col2.items) |item2| {
+        if (map.get(item2)) |value| {
+            try map.put(item2, value + 1);
+        } else {
+            try map.put(item2, 1);
+        }
+    }
+
+    var sim: i32 = 0;
+    for (col1.items) |item1| {
+        if (map.get(item1)) |value| {
+            sim += value * item1;
+        }
+    }    
+
+    std.debug.print("Part 2 final answer: {}\n", .{sim});
 }
