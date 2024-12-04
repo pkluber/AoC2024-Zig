@@ -1,5 +1,9 @@
 const std = @import("std");
 
+fn abs(comptime T: type, x: T) T {
+    return if (x < 0) -x else x; 
+}
+
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
@@ -60,9 +64,9 @@ pub fn main() !void {
     for (col1.items) |item1| {
         const item2 = col2.items[idx];
         const diff = item1 - item2;
-        total += if (diff < 0) -diff else diff;
+        total += abs(i32, diff);
         idx += 1;
     }
 
-    std.debug.print("Final answer: {}\n", .{total});
+    std.debug.print("Part 1 final answer: {}\n", .{total});
 }
