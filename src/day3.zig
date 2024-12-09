@@ -34,6 +34,15 @@ fn numDigits(num: i32) u32 {
     return num_digits;
 }
 
+fn stringsEqual(str: []u8, str2: []const u8) bool {
+    var idx: u32 = 0;
+    while (idx < str.len) : (idx += 1) 
+        if (str[idx] != str2[idx])
+            return false;
+    
+    return str.len == str2.len;
+}
+
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
@@ -76,4 +85,42 @@ pub fn main() !void {
     }
 
     std.debug.print("Day 3 Part 1 final answer: {}\n", .{muls});
+
+    idx = 0;
+    var muls2: i32 = 0;
+    var do = true;
+    while (idx < buffer.len) : (idx += 1) {
+        // Check for don't()
+        if (idx+7 <= buffer.len 
+            and stringsEqual(buffer[idx..idx+7], "don't()"))
+        {
+            do = false;
+            continue;
+        }
+
+        if (idx+4 <= buffer.len 
+            and stringsEqual(buffer[idx..idx+4], "do()"))
+        {
+            do = true;
+            continue;
+        }
+
+        if (do and idx+4 <= buffer.len 
+            and stringsEqual(buffer[idx..idx+4], "mul("))
+        {
+            // Try to get first number
+            const num1 = sliceNumber(buffer, idx+4, ',');
+            if (num1 == -1)
+                continue;
+
+            // Try and get second number now
+            const num2 = sliceNumber(buffer, idx+4+numDigits(num1)+1, ')');
+            if (num2 == -1)
+                continue;
+            
+            muls2 += num1 * num2;
+        }
+    }
+
+    std.debug.print("Day 3 Part 2 final answer: {}\n", .{muls2});
 }
