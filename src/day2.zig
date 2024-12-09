@@ -92,4 +92,72 @@ pub fn main() !void {
     }
 
     std.debug.print("Part 1 final answer: {}\n", .{numSafe});
+
+    var numSafe2: u32 = 0;
+    for (lists.items) |list| {
+        var idx: u32 = 0;
+        var allIncreasing = true;
+        var allDecreasing = true;
+        var goodDiffs = true;
+        var canSkip = true;
+        var justSkipped = false;
+
+        for (list.items) |item| {
+            if (idx == list.items.len - 1)
+                break;
+            
+            const item1 = if (justSkipped) list.items[idx-1] else item;
+            const item2 = list.items[idx+1];
+            const diff = item2 - item1;
+
+            if (diff > 0)
+            {
+                allDecreasing = false;
+                if (!allDecreasing and !allIncreasing and canSkip)
+                {
+                    allDecreasing = true;
+                    canSkip = false;
+                    idx += 1;
+                    justSkipped = true;
+                    continue;
+                }
+            }
+            if (diff < 0)
+            {
+                allIncreasing = false;
+                if (!allDecreasing and !allIncreasing and canSkip)
+                {
+                    allIncreasing = true;
+                    canSkip = false;
+                    idx += 1;
+                    justSkipped = true;
+                    continue;
+                }
+            }
+            
+            if (!allDecreasing and !allIncreasing and !canSkip)
+                break;
+
+            const absDiff = abs(i32, diff);
+
+            if (absDiff < 1 or absDiff > 3)
+            {
+                goodDiffs = false;
+                if (canSkip) {
+                    goodDiffs = true;
+                    canSkip = false;
+                    idx += 1;
+                    justSkipped = true;
+                    continue;
+                }
+            }
+            idx += 1;
+            justSkipped = false;
+        }
+
+        if ((allIncreasing or allDecreasing) and goodDiffs)
+            numSafe2 += 1;
+    }
+
+    std.debug.print("Part 2 final answer: {}\n", .{numSafe2});
 }
