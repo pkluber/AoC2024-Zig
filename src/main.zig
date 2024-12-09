@@ -1,5 +1,6 @@
 const std = @import("std");
 const day1 = @import("day1.zig");
+const day2 = @import("day2.zig");
 
 pub fn main() !void {
     // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
@@ -17,6 +18,7 @@ pub fn main() !void {
     try bw.flush(); // don't forget to flush!
 
     try day1.main();
+    try day2.main();
 }
 
 test "simple test" {
