@@ -93,6 +93,7 @@ pub fn main() !void {
 
     std.debug.print("Part 1 final answer: {}\n", .{numSafe});
 
+    //TODO: make the first number skippable
     var numSafe2: u32 = 0;
     for (lists.items) |list| {
         var idx: u32 = 0;
