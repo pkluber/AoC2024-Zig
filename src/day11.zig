@@ -106,6 +106,12 @@ pub fn main() !void {
 
             try rock.mul(rock, &mul);
         }
+
+        std.debug.print("Blink {}: ", .{blink + 1});
+        for (rocks.items) |rock| {
+            std.debug.print("{s} ", .{try rock.toString(allocator, 10, std.fmt.Case.lower)});
+        }
+        std.debug.print("\n", .{});
     }
 
     std.debug.print("Day 11 Part 1 final answer: {}\n", .{rocks.items.len});
