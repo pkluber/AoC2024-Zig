@@ -24,7 +24,8 @@ fn numDigits(x: BigInt, allocator: std.mem.Allocator) !u32 {
 }
 
 pub fn main() !void {
-    const allocator = std.heap.page_allocator;
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
 
     // Open the file
     var file = try std.fs.cwd().openFile("day11.txt", .{});
@@ -48,8 +49,6 @@ pub fn main() !void {
     while (lines_iter.next()) |line| {
         if (line.len == 0)
             continue;
-
-        std.debug.print("Foo: {s}\n", .{line});
 
         const rock_input = std.fmt.parseInt(i32, line, 10) catch -1;
         if (rock_input == -1)
