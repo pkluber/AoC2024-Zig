@@ -8,6 +8,7 @@ fn numDigits(x: BigInt, allocator: std.mem.Allocator) !u32 {
 
     // Setup gunk for division
     var quotient = try x.clone();
+    defer quotient.deinit();
 
     var remainder = try BigInt.init(allocator);
     defer remainder.deinit();
@@ -15,6 +16,7 @@ fn numDigits(x: BigInt, allocator: std.mem.Allocator) !u32 {
     var num_digits: u32 = 0;
     while (!quotient.eqlZero()) : (num_digits += 1) {
         var quot_clone = try quotient.clone();
+        defer quot_clone.deinit();
         try quotient.divTrunc(&remainder, &quot_clone, &ten);
     }
 
@@ -91,7 +93,8 @@ pub fn main() !void {
                 var left_half = try BigInt.init(allocator);
                 try left_half.divTrunc(&right_half, rock, &div);
 
-                _ = rocks.swapRemove(@as(u32, @intCast(idx)));
+                var old_rock = rocks.swapRemove(@as(u32, @intCast(idx)));
+                old_rock.deinit();
                 try rocks.append(left_half);
                 try rocks.append(right_half);
                 continue;
