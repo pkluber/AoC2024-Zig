@@ -59,6 +59,14 @@ pub fn main() !void {
         try rocks.append(rock_num);
     }
 
+    // var ex1 = try BigInt.init(allocator);
+    // try ex1.set(125);
+    // try rocks.append(ex1);
+
+    // var ex2 = try BigInt.init(allocator);
+    // try ex2.set(17);
+    // try rocks.append(ex2);
+
     const num_blinks = 25;
     var blink: u32 = 0;
     while (blink < num_blinks) : (blink += 1) {
@@ -107,11 +115,11 @@ pub fn main() !void {
             try rock.mul(rock, &mul);
         }
 
-        std.debug.print("Blink {}: ", .{blink + 1});
-        for (rocks.items) |rock| {
-            std.debug.print("{s} ", .{try rock.toString(allocator, 10, std.fmt.Case.lower)});
-        }
-        std.debug.print("\n", .{});
+        // std.debug.print("Blink {}: ", .{blink + 1});
+        // for (rocks.items) |rock| {
+        //     std.debug.print("{s} ", .{try rock.toString(allocator, 10, std.fmt.Case.lower)});
+        // }
+        // std.debug.print("\n", .{});
     }
 
     std.debug.print("Day 11 Part 1 final answer: {}\n", .{rocks.items.len});
