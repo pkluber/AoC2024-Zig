@@ -48,7 +48,7 @@ pub fn main() !void {
 
     var curr_idx: u32 = 0;
     var tail_idx: usize = file_system.items.len - 1;
-    while (empty_spaces > 0) : (tail_idx -= 1) {
+    while (empty_spaces > 0 and tail_idx > curr_idx) : (tail_idx -= 1) {
         const ffile = file_system.items[tail_idx];
         if (ffile) |file_no| {
             // Find the next spot to insert
