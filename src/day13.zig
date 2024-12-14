@@ -7,7 +7,8 @@ const State = struct {
 
     pub fn cmp(context: u32, a: State, b: State) std.math.Order {
         _ = context;
-        return std.math.order(a.tokens, b.tokens);
+        // Return b < a to prioritize lower number of tokens
+        return std.math.order(b.tokens, a.tokens);
     }
 };
 
@@ -37,6 +38,7 @@ pub fn main() !void {
     _ = try file.readAll(buffer);
 
     // Parse input
+    var problems = std.ArrayList(ProblemState).init(allocator);
     var sections_iter = std.mem.split(u8, buffer, "\n\n");
     while (sections_iter.next()) |section| {
         if (section.len == 0)
@@ -66,12 +68,33 @@ pub fn main() !void {
             } else {
                 ps.prize = state;
             }
+
+            try problems.append(ps);
         }
     }
 
-    // Data structures
-    var pq = std.PriorityQueue(State, u32, State.cmp).init(allocator, 0);
-    defer pq.deinit();
+    var total_tokens: u32 = 0;
+    for (problems.items) |problem| {
+        var pq = std.PriorityQueue(State, u32, State.cmp).init(allocator, 0);
+        defer pq.deinit();
 
-    std.debug.print("Day 13 Part 1 final answer: {}\n", .{0});
+        try pq.add(State{ .tokens = 0, .x = 0, .y = 0 });
+        while (pq.items.len > 0) {
+            const state = pq.remove();
+            if (state.x == problem.prize.x and state.y == problem.prize.y) {
+                // Found solution!
+                total_tokens += state.tokens;
+                break;
+            }
+
+            const option1 = State{ .x = state.x + problem.a.x, .y = state.y + problem.a.y, .tokens = state.tokens + 3 };
+            const option2 = State{ .x = state.x + problem.b.x, .y = state.y + problem.b.y, .tokens = state.tokens + 1 };
+            if (option1.x <= problem.prize.x and option1.y <= problem.prize.y)
+                try pq.add(option1);
+            if (option2.x <= problem.prize.x and option2.y <= problem.prize.y)
+                try pq.add(option2);
+        }
+    }
+
+    std.debug.print("Day 13 Part 1 final answer: {}\n", .{total_tokens});
 }

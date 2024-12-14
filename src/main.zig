@@ -20,6 +20,6 @@ pub fn main() !void {
     try day5.main();
     try day6.main();
     try day9.main();
-    try day11.main();
+    // try day11.main();
     try day13.main();
 }
