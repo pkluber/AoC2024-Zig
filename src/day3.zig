@@ -3,7 +3,7 @@ const std = @import("std");
 fn safeGet(arr: []u8, idx: u32) u8 {
     if (idx < 0 or idx >= arr.len)
         return 0;
-    
+
     return arr[idx];
 }
 
@@ -25,8 +25,7 @@ fn sliceNumber(arr: []u8, start_idx: u32, end_char: u8) i32 {
 fn numDigits(num: i32) u32 {
     var num_digits: u32 = 0;
     var num_left = num;
-    while (num_left > 0) 
-    {
+    while (num_left > 0) {
         num_left = @divTrunc(num_left, 10);
         num_digits += 1;
     }
@@ -36,10 +35,10 @@ fn numDigits(num: i32) u32 {
 
 fn stringsEqual(str: []u8, str2: []const u8) bool {
     var idx: u32 = 0;
-    while (idx < str.len) : (idx += 1) 
+    while (idx < str.len) : (idx += 1)
         if (str[idx] != str2[idx])
             return false;
-    
+
     return str.len == str2.len;
 }
 
@@ -63,24 +62,20 @@ pub fn main() !void {
     var idx: u32 = 0;
     var muls: i32 = 0;
     while (idx < buffer.len) : (idx += 1) {
-        if (safeGet(buffer, idx) == 'm' 
-            and safeGet(buffer, idx+1) == 'u' 
-            and safeGet(buffer, idx+2) == 'l'
-            and safeGet(buffer, idx+3) == '(')
-        {
+        if (safeGet(buffer, idx) == 'm' and safeGet(buffer, idx + 1) == 'u' and safeGet(buffer, idx + 2) == 'l' and safeGet(buffer, idx + 3) == '(') {
             // Try to get first number
-            const num1 = sliceNumber(buffer, idx+4, ',');
+            const num1 = sliceNumber(buffer, idx + 4, ',');
             if (num1 == -1)
                 continue;
 
             // Try and get second number now
-            const num2 = sliceNumber(buffer, idx+4+numDigits(num1)+1, ')');
+            const num2 = sliceNumber(buffer, idx + 4 + numDigits(num1) + 1, ')');
             if (num2 == -1)
                 continue;
-            
+
             muls += num1 * num2;
 
-            std.debug.print("{} from {s}\n", .{num1*num2, buffer[idx..(idx+4+numDigits(num1)+1+numDigits(num2)+1)]});
+            // std.debug.print("{} from {s}\n", .{num1*num2, buffer[idx..(idx+4+numDigits(num1)+1+numDigits(num2)+1)]});
         }
     }
 
@@ -91,33 +86,27 @@ pub fn main() !void {
     var do = true;
     while (idx < buffer.len) : (idx += 1) {
         // Check for don't()
-        if (idx+7 <= buffer.len 
-            and stringsEqual(buffer[idx..idx+7], "don't()"))
-        {
+        if (idx + 7 <= buffer.len and stringsEqual(buffer[idx .. idx + 7], "don't()")) {
             do = false;
             continue;
         }
 
-        if (idx+4 <= buffer.len 
-            and stringsEqual(buffer[idx..idx+4], "do()"))
-        {
+        if (idx + 4 <= buffer.len and stringsEqual(buffer[idx .. idx + 4], "do()")) {
             do = true;
             continue;
         }
 
-        if (do and idx+4 <= buffer.len 
-            and stringsEqual(buffer[idx..idx+4], "mul("))
-        {
+        if (do and idx + 4 <= buffer.len and stringsEqual(buffer[idx .. idx + 4], "mul(")) {
             // Try to get first number
-            const num1 = sliceNumber(buffer, idx+4, ',');
+            const num1 = sliceNumber(buffer, idx + 4, ',');
             if (num1 == -1)
                 continue;
 
             // Try and get second number now
-            const num2 = sliceNumber(buffer, idx+4+numDigits(num1)+1, ')');
+            const num2 = sliceNumber(buffer, idx + 4 + numDigits(num1) + 1, ')');
             if (num2 == -1)
                 continue;
-            
+
             muls2 += num1 * num2;
         }
     }

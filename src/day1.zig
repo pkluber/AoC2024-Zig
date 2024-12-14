@@ -1,7 +1,7 @@
 const std = @import("std");
 
 fn abs(comptime T: type, x: T) T {
-    return if (x < 0) -x else x; 
+    return if (x < 0) -x else x;
 }
 
 pub fn main() !void {
@@ -22,7 +22,7 @@ pub fn main() !void {
     _ = try file.readAll(buffer);
 
     // Print the contents as a string
-    try std.io.getStdOut().writer().print("{s}\n", .{buffer});
+    //try std.io.getStdOut().writer().print("{s}\n", .{buffer});
 
     var col1 = std.ArrayList(i32).init(allocator);
     var col2 = std.ArrayList(i32).init(allocator);
@@ -31,14 +31,14 @@ pub fn main() !void {
 
     var lines = std.mem.split(u8, buffer, "\n");
     while (lines.next()) |line| {
-        std.debug.print("Line: {s}\n", .{line});
+        //std.debug.print("Line: {s}\n", .{line});
 
         var columns = std.mem.split(u8, line, "   ");
         var i: u16 = 0;
         while (columns.next()) |part| : (i += 1) {
-            std.debug.print("Column {}:", .{i});
-            std.debug.print("{s}\n", .{part});
-            
+            //std.debug.print("Column {}:", .{i});
+            //std.debug.print("{s}\n", .{part});
+
             const num: i32 = std.fmt.parseInt(i32, part, 10) catch -1;
 
             if (num == -1)
@@ -52,13 +52,13 @@ pub fn main() !void {
         }
     }
 
-    for (col1.items) |item| {
-        std.debug.print("Item: {}\n", .{item});
-    }
+    // for (col1.items) |item| {
+    //      std.debug.print("Item: {}\n", .{item});
+    // }
 
     std.mem.sort(i32, col1.items, {}, comptime std.sort.asc(i32));
     std.mem.sort(i32, col2.items, {}, comptime std.sort.asc(i32));
-    
+
     var idx: u32 = 0;
     var total: i32 = 0;
     for (col1.items) |item1| {
@@ -68,7 +68,7 @@ pub fn main() !void {
         idx += 1;
     }
 
-    std.debug.print("Part 1 final answer: {}\n", .{total});
+    std.debug.print("Day 1 Part 1 final answer: {}\n", .{total});
 
     // Onto part 2
     var map = std.AutoHashMap(i32, i32).init(allocator);
@@ -87,7 +87,7 @@ pub fn main() !void {
         if (map.get(item1)) |value| {
             sim += value * item1;
         }
-    }    
+    }
 
-    std.debug.print("Part 2 final answer: {}\n", .{sim});
+    std.debug.print("Day 1 Part 2 final answer: {}\n", .{sim});
 }

@@ -1,7 +1,7 @@
 const std = @import("std");
 
 fn abs(comptime T: type, x: T) T {
-    return if (x < 0) -x else x; 
+    return if (x < 0) -x else x;
 }
 
 fn identical(comptime T: type, arr1: std.ArrayList(T), arr2: std.ArrayList(T)) bool {
@@ -12,6 +12,39 @@ fn identical(comptime T: type, arr1: std.ArrayList(T), arr2: std.ArrayList(T)) b
         idx += 1;
     }
     return arr1.items.len == arr2.items.len;
+}
+
+fn isSafe(list: std.ArrayList(i32)) bool {
+    var idx: u32 = 0;
+    var allIncreasing = true;
+    var allDecreasing = true;
+    var goodDiffs = true;
+
+    for (list.items) |item| {
+        if (idx == list.items.len - 1)
+            break;
+
+        const item2 = list.items[idx + 1];
+        const diff = item2 - item;
+
+        if (diff > 0)
+            allDecreasing = false;
+        if (diff < 0)
+            allIncreasing = false;
+
+        if (!allDecreasing and !allIncreasing)
+            break;
+
+        const absDiff = abs(i32, diff);
+
+        if (absDiff < 1 or absDiff > 3) {
+            goodDiffs = false;
+            break;
+        }
+        idx += 1;
+    }
+
+    return (allIncreasing or allDecreasing) and goodDiffs;
 }
 
 pub fn main() !void {
@@ -38,8 +71,8 @@ pub fn main() !void {
     while (lines.next()) |line| {
         if (line.len == 0)
             continue;
-        
-        std.debug.print("Line: {s}\n", .{line});
+
+        //std.debug.print("Line: {s}\n", .{line});
 
         var columns = std.mem.split(u8, line, " ");
         var list = std.ArrayList(i32).init(allocator);
@@ -57,108 +90,32 @@ pub fn main() !void {
 
     var numSafe: u32 = 0;
     for (lists.items) |list| {
-        var idx: u32 = 0;
-        var allIncreasing = true;
-        var allDecreasing = true;
-        var goodDiffs = true;
-
-        for (list.items) |item| {
-            if (idx == list.items.len - 1)
-                break;
-            
-            const item2 = list.items[idx+1];
-            const diff = item2 - item;
-
-            if (diff > 0)
-                allDecreasing = false;
-            if (diff < 0)
-                allIncreasing = false;
-            
-            if (!allDecreasing and !allIncreasing)
-                break;
-
-            const absDiff = abs(i32, diff);
-
-            if (absDiff < 1 or absDiff > 3)
-            {
-                goodDiffs = false;
-                break;
-            }
-            idx += 1;
-        }
-
-        if ((allIncreasing or allDecreasing) and goodDiffs)
+        if (isSafe(list))
             numSafe += 1;
     }
 
-    std.debug.print("Part 1 final answer: {}\n", .{numSafe});
+    std.debug.print("Day 2 Part 1 final answer: {}\n", .{numSafe});
 
-    //TODO: make the first number skippable
     var numSafe2: u32 = 0;
-    for (lists.items) |list| {
+    outer: for (lists.items) |list| {
         var idx: u32 = 0;
-        var allIncreasing = true;
-        var allDecreasing = true;
-        var goodDiffs = true;
-        var canSkip = true;
-        var justSkipped = false;
+        var slice = try allocator.alloc(i32, list.items.len - 1);
+        while (idx < list.items.len) : (idx += 1) {
+            std.mem.copyForwards(i32, slice[0..idx], list.items[0..idx]);
+            std.mem.copyForwards(i32, slice[idx..], list.items[idx + 1 ..]);
+            var array_list = std.ArrayList(i32).init(allocator);
+            defer array_list.deinit();
 
-        for (list.items) |item| {
-            if (idx == list.items.len - 1)
-                break;
-            
-            const item1 = if (justSkipped) list.items[idx-1] else item;
-            const item2 = list.items[idx+1];
-            const diff = item2 - item1;
-
-            if (diff > 0)
-            {
-                allDecreasing = false;
-                if (!allDecreasing and !allIncreasing and canSkip)
-                {
-                    allDecreasing = true;
-                    canSkip = false;
-                    idx += 1;
-                    justSkipped = true;
-                    continue;
-                }
+            for (@as([]i32, slice)) |item| {
+                try array_list.append(item);
             }
-            if (diff < 0)
-            {
-                allIncreasing = false;
-                if (!allDecreasing and !allIncreasing and canSkip)
-                {
-                    allIncreasing = true;
-                    canSkip = false;
-                    idx += 1;
-                    justSkipped = true;
-                    continue;
-                }
-            }
-            
-            if (!allDecreasing and !allIncreasing and !canSkip)
-                break;
 
-            const absDiff = abs(i32, diff);
-
-            if (absDiff < 1 or absDiff > 3)
-            {
-                goodDiffs = false;
-                if (canSkip) {
-                    goodDiffs = true;
-                    canSkip = false;
-                    idx += 1;
-                    justSkipped = true;
-                    continue;
-                }
+            if (isSafe(array_list)) {
+                numSafe2 += 1;
+                continue :outer;
             }
-            idx += 1;
-            justSkipped = false;
         }
-
-        if ((allIncreasing or allDecreasing) and goodDiffs)
-            numSafe2 += 1;
     }
 
-    std.debug.print("Part 2 final answer: {}\n", .{numSafe2});
+    std.debug.print("Day 2 Part 2 final answer: {}\n", .{numSafe2});
 }

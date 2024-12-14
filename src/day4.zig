@@ -3,7 +3,7 @@ const std = @import("std");
 fn safeGet(comptime T: type, arr: []const T, idx: u32) ?T {
     if (idx < 0 or idx >= arr.len)
         return null;
-    
+
     return arr[idx];
 }
 
@@ -15,21 +15,19 @@ fn checkXmas(arr: [][]const u8, line_idx: u32, char_idx: u32, dx: i32, dy: i32) 
         const raw_y = @as(i32, @intCast(line_idx)) + @as(i32, @intCast(idx)) * dy;
         const raw_x = @as(i32, @intCast(char_idx)) + @as(i32, @intCast(idx)) * dx;
 
-        if (raw_y < 0 or raw_x < 0)
-        {
+        if (raw_y < 0 or raw_x < 0) {
             is_xmas = false;
             break;
         }
-        
+
         const y = @as(u32, @intCast(raw_y));
         const x = @as(u32, @intCast(raw_x));
-
 
         if (safeGet([]const u8, arr, y)) |line| {
             if (safeGet(u8, line, x)) |char| {
                 if (char != xmas[idx])
                     is_xmas = false;
-                    break;
+                break;
             } else {
                 is_xmas = false;
                 break;
@@ -37,7 +35,7 @@ fn checkXmas(arr: [][]const u8, line_idx: u32, char_idx: u32, dx: i32, dy: i32) 
         } else {
             is_xmas = false;
             break;
-        }     
+        }
     }
 
     return is_xmas;
@@ -67,11 +65,10 @@ pub fn main() !void {
     while (lines_iter.next()) |line| {
         if (line.len == 0)
             continue;
-        
-        std.debug.print("Line: {s}\n", .{line});
+
+        // std.debug.print("Line: {s}\n", .{line});
         try lines.append(line);
     }
-
 
     var xmas_count: u32 = 0;
     var line_idx: u32 = 0;
@@ -85,7 +82,7 @@ pub fn main() !void {
                 while (dy <= 1) : (dy += 1) {
                     if (dx == 0 and dy == 0)
                         continue;
-                    
+
                     const is_xmas = checkXmas(lines.items, line_idx, char_idx, dx, dy);
                     if (is_xmas)
                         xmas_count += 1;
