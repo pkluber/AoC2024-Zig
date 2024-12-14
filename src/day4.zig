@@ -42,6 +42,58 @@ fn checkXmas(comptime word: []const u8, arr: [][]const u8, line_idx: u32, char_i
     return is_xmas;
 }
 
+fn checkXMas(arr: [][]const u8, line_idx: u32, char_idx: u32) bool {
+    if (safeGet([]const u8, arr, line_idx)) |line| {
+        if (safeGet(u8, line, char_idx)) |char| {
+            if (char == 'A') {
+                // Now check the four corners
+                var dx_m1: i32 = 0;
+                var dy_m1: i32 = 0;
+                var dx_m2: i32 = 0;
+                var dy_m2: i32 = 0;
+                var count_m: u32 = 0;
+                var count_s: u32 = 0;
+                var dx: i32 = -1;
+                while (dx <= 1) : (dx += 2) {
+                    var dy: i32 = -1;
+                    while (dy <= 1) : (dy += 2) {
+                        const raw_y = @as(i32, @intCast(line_idx)) + dy;
+                        const raw_x = @as(i32, @intCast(char_idx)) + dx;
+
+                        if (raw_x < 0 or raw_y < 0)
+                            continue;
+
+                        const y = @as(u32, @intCast(raw_y));
+                        const x = @as(u32, @intCast(raw_x));
+
+                        if (safeGet([]const u8, arr, y)) |subline| {
+                            if (safeGet(u8, subline, x)) |subchar| {
+                                if (subchar == 'M') {
+                                    count_m += 1;
+                                    if (dx_m1 == 0) {
+                                        dx_m1 = dx;
+                                        dy_m1 = dy;
+                                    } else {
+                                        dx_m2 = dx;
+                                        dy_m2 = dy;
+                                    }
+                                }
+
+                                if (subchar == 'S')
+                                    count_s += 1;
+                            }
+                        }
+                    }
+                }
+
+                if (count_m == 2 and count_s == 2 and !(dx_m1 != dx_m2 and dy_m1 != dy_m2))
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
@@ -100,15 +152,8 @@ pub fn main() !void {
         const line = lines.items[line_idx2];
         var char_idx: u32 = 0;
         while (char_idx < line.len) : (char_idx += 1) {
-            var dx: i32 = -1;
-            while (dx <= 1) : (dx += 2) {
-                var dy: i32 = -1;
-                while (dy <= 1) : (dy += 2) {
-                    const is_xmas = checkXmas("MAS", lines.items, line_idx2, char_idx, dx, dy);
-                    if (is_xmas)
-                        mas_count += 1;
-                }
-            }
+            if (checkXMas(lines.items, line_idx2, char_idx))
+                mas_count += 1;
         }
     }
 
