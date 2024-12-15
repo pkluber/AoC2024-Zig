@@ -54,9 +54,9 @@ pub fn main() !void {
             var state: Vec2 = undefined;
             var token_iter = std.mem.split(u8, line, " ");
             while (token_iter.next()) |token| {
-                if (std.mem.startsWith(u8, token, "X+")) {
+                if (std.mem.startsWith(u8, token, "X")) {
                     state.x = try std.fmt.parseInt(u32, token[2 .. token.len - 1], 10);
-                } else if (std.mem.startsWith(u8, token, "Y+")) {
+                } else if (std.mem.startsWith(u8, token, "Y")) {
                     state.y = try std.fmt.parseInt(u32, token[2..], 10);
                 }
             }
@@ -68,32 +68,34 @@ pub fn main() !void {
             } else {
                 ps.prize = state;
             }
-
-            try problems.append(ps);
         }
+
+        try problems.append(ps);
     }
 
-    var total_tokens: u32 = 0;
+    var total_tokens: u64 = 0;
     for (problems.items) |problem| {
-        var pq = std.PriorityQueue(State, u32, State.cmp).init(allocator, 0);
-        defer pq.deinit();
+        //std.debug.print("Problem:\nA: {},{}\nB: {},{}\nPrize: {},{}\n", .{ problem.a.x, problem.a.y, problem.b.x, problem.b.y, problem.prize.x, problem.prize.y });
 
-        try pq.add(State{ .tokens = 0, .x = 0, .y = 0 });
-        while (pq.items.len > 0) {
-            const state = pq.remove();
-            if (state.x == problem.prize.x and state.y == problem.prize.y) {
-                // Found solution!
-                total_tokens += state.tokens;
-                break;
+        // Brute force solution
+        var solution_found = false;
+        var min_tokens: u64 = std.math.maxInt(u64);
+        var num_a: u64 = 0;
+        while (num_a < 100) : (num_a += 1) {
+            var num_b: u64 = 0;
+            while (num_b < 100) : (num_b += 1) {
+                const x = problem.a.x * num_a + problem.b.x * num_b;
+                const y = problem.a.y * num_a + problem.b.y * num_b;
+                const num_tokens = 3 * num_a + num_b;
+                if (x == problem.prize.x and y == problem.prize.y) {
+                    solution_found = true;
+                    min_tokens = if (num_tokens < min_tokens) num_tokens else min_tokens;
+                }
             }
-
-            const option1 = State{ .x = state.x + problem.a.x, .y = state.y + problem.a.y, .tokens = state.tokens + 3 };
-            const option2 = State{ .x = state.x + problem.b.x, .y = state.y + problem.b.y, .tokens = state.tokens + 1 };
-            if (option1.x <= problem.prize.x and option1.y <= problem.prize.y)
-                try pq.add(option1);
-            if (option2.x <= problem.prize.x and option2.y <= problem.prize.y)
-                try pq.add(option2);
         }
+
+        if (solution_found)
+            total_tokens += min_tokens;
     }
 
     std.debug.print("Day 13 Part 1 final answer: {}\n", .{total_tokens});
