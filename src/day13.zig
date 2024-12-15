@@ -99,4 +99,32 @@ pub fn main() !void {
     }
 
     std.debug.print("Day 13 Part 1 final answer: {}\n", .{total_tokens});
+
+    var total_tokens_p2: u64 = 0;
+    for (problems.items) |problem| {
+        const new_prize_x: u64 = 10000000000000 + @as(u64, @intCast(problem.prize.x));
+        const new_prize_y: u64 = 10000000000000 + @as(u64, @intCast(problem.prize.y));
+
+        const det: i64 = @as(i64, @intCast(problem.a.x * problem.b.y)) - @as(i64, @intCast(problem.a.y * problem.b.x));
+        if (det == 0)
+            continue;
+
+        const raw_a: i64 = @divTrunc(@as(i64, @intCast(new_prize_x * problem.b.y)) - @as(i64, @intCast(new_prize_y * problem.b.x)), det);
+        const raw_b: i64 = @divTrunc(@as(i64, @intCast(new_prize_y * problem.a.x)) - @as(i64, @intCast(new_prize_x * problem.a.y)), det);
+
+        // Validate solution
+        if (raw_a < 0 or raw_b < 0)
+            continue;
+
+        const a: u64 = @as(u64, @intCast(raw_a));
+        const b: u64 = @as(u64, @intCast(raw_b));
+        const xp: u64 = @as(u64, @intCast(a * problem.a.x + b * problem.b.x));
+        const yp: u64 = @as(u64, @intCast(a * problem.a.y + b * problem.b.y));
+        if (xp == new_prize_x and yp == new_prize_y) {
+            // Have found solution!
+            total_tokens_p2 += 3 * a + b;
+        }
+    }
+
+    std.debug.print("Day 13 Part 2 final answer: {}\n", .{total_tokens_p2});
 }
