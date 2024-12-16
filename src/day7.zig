@@ -2,6 +2,17 @@ const std = @import("std");
 
 const Problem = struct { ans: u64, nums: std.ArrayList(u64) };
 
+fn numDigits(num: u64) u32 {
+    var num_digits: u32 = 0;
+    var num_left = num;
+    while (num_left > 0) {
+        num_left = @divTrunc(num_left, 10);
+        num_digits += 1;
+    }
+
+    return num_digits;
+}
+
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
@@ -67,4 +78,33 @@ pub fn main() !void {
     }
 
     std.debug.print("Day 7 Part 1 final answer: {}\n", .{calibration});
+
+    var calibration2: u64 = 0;
+    outer: for (problems.items) |problem| {
+        const nums = problem.nums;
+        const ans = problem.ans;
+        var op_idx: usize = 0;
+        while (op_idx < (@as(usize, 1) << 2 * @as(u6, @intCast(nums.items.len - 1)))) : (op_idx += 1) {
+            var idx: usize = 0;
+            var cand: u64 = nums.items[0];
+            while (idx < nums.items.len - 1) : (idx += 1) {
+                const bitslice = (@as(usize, 3) << 2 * @as(u6, @intCast(idx))) & op_idx;
+                const next_item = nums.items[idx + 1];
+                if (bitslice == 0) {
+                    cand += next_item;
+                } else if (bitslice == 1) {
+                    cand *= next_item;
+                } else if (bitslice == 2 or bitslice == 3) {
+                    cand = cand * std.math.pow(u64, 10, numDigits(next_item)) + next_item;
+                }
+            }
+
+            if (cand == ans) {
+                calibration2 += ans;
+                continue :outer;
+            }
+        }
+    }
+
+    std.debug.print("Day 7 Part 2 final answer: {}\n", .{calibration2});
 }
