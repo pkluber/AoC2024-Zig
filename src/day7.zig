@@ -6,7 +6,7 @@ pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
     // Open the file
-    var file = try std.fs.cwd().openFile("day6.txt", .{});
+    var file = try std.fs.cwd().openFile("day7.txt", .{});
     defer file.close();
 
     // Get the file size
@@ -46,11 +46,11 @@ pub fn main() !void {
         const nums = problem.nums;
         const ans = problem.ans;
         var op_idx: usize = 0;
-        while (op_idx < (@as(usize, 1) << (nums.items.len - 1))) : (op_idx += 1) {
+        while (op_idx < (@as(usize, 1) << @as(u6, @intCast(nums.items.len - 1)))) : (op_idx += 1) {
             var idx: usize = 0;
             var cand: u64 = nums.items[0];
             while (idx < nums.items.len - 1) : (idx += 1) {
-                const bitslice = (@as(usize, 1) << idx) & op_idx;
+                const bitslice = (@as(usize, 1) << @as(u6, @intCast(idx))) & op_idx;
                 const next_item = nums.items[idx + 1];
                 if (bitslice == 0) {
                     cand += next_item;
@@ -66,5 +66,5 @@ pub fn main() !void {
         }
     }
 
-    std.debug.print("Day 7 Part 1 final answer: {}", .{calibration});
+    std.debug.print("Day 7 Part 1 final answer: {}\n", .{calibration});
 }
