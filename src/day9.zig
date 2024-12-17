@@ -34,6 +34,11 @@ pub fn main() !void {
 
         var idx2: u32 = 0;
         while (idx2 < num) : (idx2 += 1) {
+            // if (is_file) {
+            //     std.debug.print("{}", .{file_id});
+            // } else {
+            //     std.debug.print(".", .{});
+            // }
             try file_system.append(if (is_file) file_id else null);
 
             if (!is_file)
@@ -46,6 +51,8 @@ pub fn main() !void {
         is_file = !is_file;
     }
 
+    //std.debug.print("\n", .{});
+
     var curr_idx: u32 = 0;
     var tail_idx: usize = file_system.items.len - 1;
     while (empty_spaces > 0 and tail_idx > curr_idx) : (tail_idx -= 1) {
@@ -53,12 +60,15 @@ pub fn main() !void {
         if (ffile) |file_no| {
             // Find the next spot to insert
             var insert_file: ?u32 = file_system.items[curr_idx];
-            while (insert_file != null and curr_idx < file_system.items.len - 1) : (curr_idx += 1) {
+            while (insert_file != null and curr_idx < file_system.items.len - 1) {
+                curr_idx += 1;
                 insert_file = file_system.items[curr_idx];
             }
 
-            if (curr_idx < file_system.items.len)
+            if (curr_idx < tail_idx) {
                 file_system.items[curr_idx] = file_no;
+                file_system.items[tail_idx] = null;
+            }
 
             empty_spaces -= 1;
         }
@@ -66,9 +76,11 @@ pub fn main() !void {
 
     var checksum: u64 = 0;
     var c_idx: u32 = 0;
-    while (c_idx < file_system.items.len) : (c_idx += 1) {
-        if (file_system.items[c_idx]) |file_no|
+    while (c_idx < curr_idx) : (c_idx += 1) {
+        if (file_system.items[c_idx]) |file_no| {
             checksum += c_idx * file_no;
+            //std.debug.print("{}", .{file_no});
+        }
     }
 
     std.debug.print("Day 9 Part 1 final answer: {}\n", .{checksum});
