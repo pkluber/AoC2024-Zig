@@ -7,7 +7,6 @@ const Vec2 = struct {
 
 fn create2DArr(comptime T: type, allocator: *const std.mem.Allocator, height: usize, width: usize) ![][]T {
     var grid: [][]T = try allocator.*.alloc([]T, height);
-    defer allocator.free(grid);
 
     var grid_idx: usize = 0;
     while (grid_idx < height) : (grid_idx += 1) {
@@ -25,6 +24,55 @@ fn init2DBoolArr(grid: [][]bool) void {
             grid[y][x] = false;
         }
     }
+}
+
+fn dijkstra(allocator: *const std.mem.Allocator, grid: [][]bool, seen: [][]bool) !i32 {
+    var q = std.ArrayList(State).init(allocator.*);
+    defer q.deinit();
+
+    try q.append(State{ .xy = Vec2{ .x = 0, .y = 0 }, .path_length = 0 });
+
+    const WIDTH = grid[0].len;
+    const HEIGHT = grid.len;
+
+    while (q.items.len > 0) {
+        const state: State = q.pop();
+        if (seen[state.xy.y][state.xy.x])
+            continue;
+
+        seen[state.xy.y][state.xy.x] = true;
+
+        if (state.xy.x == WIDTH - 1 and state.xy.y == HEIGHT - 1)
+            return @as(i32, @intCast(state.path_length));
+
+        var dir_idx: u32 = 0;
+        while (dir_idx < 4) : (dir_idx += 1) {
+            const x = switch (dir_idx) {
+                0 => state.xy.x + 1,
+                2 => state.xy.x -% 1,
+                1, 3 => state.xy.x,
+                else => unreachable,
+            };
+
+            const y = switch (dir_idx) {
+                0, 2 => state.xy.y,
+                1 => state.xy.y + 1,
+                3 => state.xy.y -% 1,
+                else => unreachable,
+            };
+
+            if (x >= WIDTH or y >= HEIGHT)
+                continue;
+
+            const grid_pos = grid[y][x];
+            if (grid_pos)
+                continue;
+
+            try q.insert(0, State{ .xy = Vec2{ .x = x, .y = y }, .path_length = state.path_length + 1 });
+        }
+    }
+
+    return -1;
 }
 
 const State = struct {
@@ -68,18 +116,15 @@ pub fn main() !void {
         try positions.append(pos);
     }
 
-    //const WIDTH = 71;
-    //const HEIGHT = 71;
-    const WIDTH = 7;
-    const HEIGHT = 7;
+    const WIDTH = 71;
+    const HEIGHT = 71;
 
     // Grid memory management and logic
     var grid = try create2DArr(bool, &allocator, HEIGHT, WIDTH);
     init2DBoolArr(grid);
 
     // Fill the grid in with the positons
-    //const SIZE_P1 = 1024;
-    const SIZE_P1 = 12;
+    const SIZE_P1 = 1024;
     var pos_idx: usize = 0;
     while (pos_idx < SIZE_P1) : (pos_idx += 1) {
         const pos = positions.items[pos_idx];
@@ -87,54 +132,11 @@ pub fn main() !void {
     }
 
     // Seen array
-    var seen = try create2DArr(bool, &allocator, HEIGHT, WIDTH);
+    const seen = try create2DArr(bool, &allocator, HEIGHT, WIDTH);
     init2DBoolArr(seen);
 
     // Implement Dijkstra's algorithm
-    var q = std.ArrayList(State).init(allocator);
-    defer q.deinit();
-
-    try q.append(State{ .xy = Vec2{ .x = 0, .y = 0 }, .path_length = 0 });
-
-    var soln_p1: u32 = 0;
-    while (q.items.len > 0) {
-        const state: State = q.pop();
-        if (seen[state.xy.y][state.xy.x])
-            continue;
-
-        seen[state.xy.y][state.xy.x] = true;
-
-        if (state.xy.x == WIDTH - 1 and state.xy.y == HEIGHT - 1) {
-            soln_p1 = state.path_length;
-            break;
-        }
-
-        var dir_idx: u32 = 0;
-        while (dir_idx < 4) : (dir_idx += 1) {
-            const x = switch (dir_idx) {
-                0 => state.xy.x + 1,
-                2 => state.xy.x -% 1,
-                1, 3 => state.xy.x,
-                else => unreachable,
-            };
-
-            const y = switch (dir_idx) {
-                0, 2 => state.xy.y,
-                1 => state.xy.y + 1,
-                3 => state.xy.y -% 1,
-                else => unreachable,
-            };
-
-            if (x >= WIDTH or y >= HEIGHT)
-                continue;
-
-            const grid_pos = grid[y][x];
-            if (grid_pos)
-                continue;
-
-            try q.insert(0, State{ .xy = Vec2{ .x = x, .y = y }, .path_length = state.path_length + 1 });
-        }
-    }
+    const soln_p1 = try dijkstra(&allocator, grid, seen);
 
     std.debug.print("Day 18 Part 1 solution: {}\n", .{soln_p1});
 }
