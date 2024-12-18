@@ -5,7 +5,19 @@ const Vec2 = struct {
     y: u32,
 };
 
-fn initGrid(grid: [][]bool) void {
+fn create2DArr(comptime T: type, allocator: *const std.mem.Allocator, height: usize, width: usize) ![][]T {
+    var grid: [][]T = try allocator.*.alloc([]T, height);
+    defer allocator.free(grid);
+
+    var grid_idx: usize = 0;
+    while (grid_idx < height) : (grid_idx += 1) {
+        grid[grid_idx] = try allocator.*.alloc(T, width);
+    }
+
+    return grid;
+}
+
+fn init2DBoolArr(grid: [][]bool) void {
     var y: usize = 0;
     while (y < grid.len) : (y += 1) {
         var x: usize = 0;
@@ -18,11 +30,6 @@ fn initGrid(grid: [][]bool) void {
 const State = struct {
     xy: Vec2,
     path_length: u32,
-
-    pub fn cmp(context: u32, a: State, b: State) std.math.Order {
-        _ = context;
-        return std.math.order(a.path_length, b.path_length);
-    }
 };
 
 pub fn main() !void {
@@ -67,15 +74,8 @@ pub fn main() !void {
     const HEIGHT = 7;
 
     // Grid memory management and logic
-    var grid: [][]bool = try allocator.alloc([]bool, HEIGHT);
-    defer allocator.free(grid);
-
-    var grid_idx: usize = 0;
-    while (grid_idx < HEIGHT) : (grid_idx += 1) {
-        grid[grid_idx] = try allocator.alloc(bool, WIDTH);
-    }
-
-    initGrid(grid);
+    var grid = try create2DArr(bool, &allocator, HEIGHT, WIDTH);
+    init2DBoolArr(grid);
 
     // Fill the grid in with the positons
     //const SIZE_P1 = 1024;
@@ -86,16 +86,24 @@ pub fn main() !void {
         grid[pos.y][pos.x] = true;
     }
 
-    // Implement Dijkstra's algorithm
-    var pq = std.PriorityQueue(State, u32, State.cmp).init(allocator, 0);
-    defer pq.deinit();
+    // Seen array
+    var seen = try create2DArr(bool, &allocator, HEIGHT, WIDTH);
+    init2DBoolArr(seen);
 
-    try pq.add(State{ .xy = Vec2{ .x = 0, .y = 0 }, .path_length = 0 });
+    // Implement Dijkstra's algorithm
+    var q = std.ArrayList(State).init(allocator);
+    defer q.deinit();
+
+    try q.append(State{ .xy = Vec2{ .x = 0, .y = 0 }, .path_length = 0 });
 
     var soln_p1: u32 = 0;
-    while (pq.items.len > 0) {
-        const state = pq.remove();
-        std.debug.print("{}", .{state.path_length});
+    while (q.items.len > 0) {
+        const state: State = q.pop();
+        if (seen[state.xy.y][state.xy.x])
+            continue;
+
+        seen[state.xy.y][state.xy.x] = true;
+
         if (state.xy.x == WIDTH - 1 and state.xy.y == HEIGHT - 1) {
             soln_p1 = state.path_length;
             break;
@@ -124,7 +132,7 @@ pub fn main() !void {
             if (grid_pos)
                 continue;
 
-            try pq.add(State{ .xy = Vec2{ .x = x, .y = y }, .path_length = state.path_length + 1 });
+            try q.insert(0, State{ .xy = Vec2{ .x = x, .y = y }, .path_length = state.path_length + 1 });
         }
     }
 
