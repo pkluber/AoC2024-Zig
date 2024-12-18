@@ -139,4 +139,20 @@ pub fn main() !void {
     const soln_p1 = try dijkstra(&allocator, grid, seen);
 
     std.debug.print("Day 18 Part 1 solution: {}\n", .{soln_p1});
+
+    // Starting at byte indexed 1024, start adding them to the grid
+    var soln_p2: usize = 0;
+    while (pos_idx < positions.items.len) : (pos_idx += 1) {
+        const pos = positions.items[pos_idx];
+        grid[pos.y][pos.x] = true;
+
+        init2DBoolArr(seen);
+        if (try dijkstra(&allocator, grid, seen) < 0) {
+            soln_p2 = pos_idx;
+            break;
+        }
+    }
+
+    const soln_p2_xy = positions.items[pos_idx];
+    std.debug.print("Day 18 Part 2 solution: {},{}\n", .{ soln_p2_xy.x, soln_p2_xy.y });
 }
