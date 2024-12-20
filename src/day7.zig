@@ -84,11 +84,11 @@ pub fn main() !void {
         const nums = problem.nums;
         const ans = problem.ans;
         var op_idx: usize = 0;
-        while (op_idx < (@as(usize, 1) << 2 * @as(u6, @intCast(nums.items.len - 1)))) : (op_idx += 1) {
+        while (op_idx < (@as(usize, 1) << (2 * @as(u6, @intCast(nums.items.len - 1))))) : (op_idx += 1) {
             var idx: usize = 0;
             var cand: u64 = nums.items[0];
             while (idx < nums.items.len - 1) : (idx += 1) {
-                const bitslice = (@as(usize, 3) << 2 * @as(u6, @intCast(idx))) & op_idx;
+                const bitslice = ((@as(usize, 3) << (2 * @as(u6, @intCast(idx)))) & op_idx) >> (2 * @as(u6, @intCast(idx)));
                 const next_item = nums.items[idx + 1];
                 if (bitslice == 0) {
                     cand += next_item;
